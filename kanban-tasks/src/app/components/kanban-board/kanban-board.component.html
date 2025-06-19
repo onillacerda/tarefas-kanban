@@ -1,0 +1,178 @@
+<div class="p-4">
+
+  <!-- Formulário de Nova Tarefa -->
+  <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow mb-6">
+    <h2 class="text-lg font-semibold mb-2 text-gray-700 dark:text-white">➕ Adicionar Nova Tarefa</h2>
+    <form (ngSubmit)="createTask()" class="grid grid-cols-1 md:grid-cols-4 gap-2">
+      <input
+        type="text"
+        placeholder="Título"
+        [(ngModel)]="newTask.title"
+        name="title"
+        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 
+        focus:outline-none focus:ring-2 focus:ring-blue-500 
+        bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        required />
+      <input
+        type="text"
+        placeholder="Responsável"
+        [(ngModel)]="newTask.responsible"
+        name="responsible"
+        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 
+        focus:outline-none focus:ring-2 focus:ring-blue-500 
+        bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        required />
+      <input
+        type="date"
+        [(ngModel)]="newTask.dueDate"
+        name="dueDate"
+        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 
+        focus:outline-none focus:ring-2 focus:ring-blue-500 
+        bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        required />
+      <button type="submit" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Criar</button>
+    </form>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Coluna Pende -->
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+      <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">📥 Pendentes</h2>
+      <div *ngFor="let task of getTasksByStatus('pendente')" 
+           class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+        <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
+        <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
+        <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>
+
+        <div class="flex gap-2 mt-2">
+          <button 
+            class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded"
+            (click)="moveTask(task, 'em andamento')">
+            ➡️ Mover
+          </button>
+          <button 
+            class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded"
+            (click)="openEditModal(task)">
+            ✏️ Editar
+          </button>
+          <button 
+            class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+            (click)="deleteTask(task._id!)">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna Em Andamento -->
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+      <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">🚧 Em Andamento</h2>
+      <div *ngFor="let task of getTasksByStatus('em andamento')" 
+      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+      <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
+      <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
+      <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>
+
+        <div class="flex gap-2 mt-2">
+          <button 
+            class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded"
+            (click)="moveTask(task, 'concluída')">
+            ➡️ Mover
+          </button>
+          <button 
+            class="bg-gray-500 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded"
+            (click)="moveTask(task, 'pendente')">
+            ⬅️ Voltar
+          </button>
+          <button 
+            class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded"
+            (click)="openEditModal(task)">
+            ✏️ Editar
+          </button>
+          <button 
+            class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+            (click)="deleteTask(task._id!)">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna Concluídas -->
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+      <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">✅ Concluídas</h2>
+      <div *ngFor="let task of getTasksByStatus('concluída')" 
+      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+      <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
+      <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
+      <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>
+
+        <div class="flex gap-2 mt-2">
+          <button 
+            class="bg-gray-500 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded"
+            (click)="moveTask(task, 'em andamento')">
+            ⬅️ Voltar
+          </button>
+          <button 
+            class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded"
+            (click)="openEditModal(task)">
+            ✏️ Editar
+          </button>
+          <button 
+            class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+            (click)="deleteTask(task._id!)">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição -->
+<div 
+  *ngIf="showEditModal" 
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+    <h2 class="text-xl font-semibold mb-4 text-center text-gray-700 dark:text-white">✏️ Editar Tarefa</h2>
+
+    <form (ngSubmit)="saveEdit()">
+      <div class="mb-4">
+        <label class="block text-sm mb-1 text-gray-700 dark:text-white">Título</label>
+        <input [(ngModel)]="editTaskData.title" name="title" required
+               class="w-full border rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"/>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-1 text-gray-700 dark:text-white">Responsável</label>
+        <input [(ngModel)]="editTaskData.responsible" name="responsible" required
+               class="w-full border rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"/>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-1 text-gray-700 dark:text-white">Data Limite</label>
+        <input [(ngModel)]="editTaskData.dueDate" name="dueDate" type="date" required
+               class="w-full border rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"/>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-1 text-gray-700 dark:text-white">Status</label>
+        <select [(ngModel)]="editTaskData.status" name="status" required
+                class="w-full border rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+          <option value="pendente">📥 Pendente</option>
+          <option value="em andamento">🚧 Em Andamento</option>
+          <option value="concluída">✅ Concluída</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded"
+                (click)="closeEditModal()">
+          Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
