@@ -139,7 +139,7 @@ http://localhost:5000/api-docs
 
 | Dark Mode | Kanban |
 |------------|--------|
-| ![Dark Mode](./screenshots/dark-mode.png) | ![Kanban](./screenshots/kanban.png) |
+| ![Dark Mode](./screenshots/dark-mode.PNG) | ![Kanban](./screenshots/kanban.PNG) |
 
 ---
 
@@ -155,4 +155,4 @@ http://localhost:5000/api-docs
 ## 👨‍💻 Desenvolvedor
 
 Feito com 💙 por **Nilson Lacerda**  
-🔗 [LinkedIn](https://www.linkedin.com/in/onillacerda) | 📧 [onillacerda](mailto:onillacerda@gmail.com)
+🔗 [LinkedIn](https://www.linkedin.com/in/onillacerda) | 📧 [Site](https://onillacerda.github.io/)
