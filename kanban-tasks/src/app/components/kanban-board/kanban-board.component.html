@@ -36,11 +36,13 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- Coluna Pende -->
-    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+    <!-- Coluna Pendente -->
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow" (dragover)="onDragOver($event)" (drop)="onDrop($event, 'pendente')">
       <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">📥 Pendentes</h2>
       <div *ngFor="let task of getTasksByStatus('pendente')" 
-           class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+           class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow cursor-move"
+           draggable="true"
+           (dragstart)="onDragStart($event, task)">
         <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
         <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
         <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>
@@ -66,10 +68,12 @@
     </div>
 
     <!-- Coluna Em Andamento -->
-    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow" (dragover)="onDragOver($event)" (drop)="onDrop($event, 'em andamento')">
       <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">🚧 Em Andamento</h2>
       <div *ngFor="let task of getTasksByStatus('em andamento')" 
-      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow cursor-move"
+      draggable="true"
+      (dragstart)="onDragStart($event, task)">
       <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
       <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
       <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>
@@ -100,10 +104,12 @@
     </div>
 
     <!-- Coluna Concluídas -->
-    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow">
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow" (dragover)="onDragOver($event)" (drop)="onDrop($event, 'concluída')">
       <h2 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-white">✅ Concluídas</h2>
       <div *ngFor="let task of getTasksByStatus('concluída')" 
-      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow">
+      class="bg-white dark:bg-gray-700 rounded p-3 mb-3 shadow cursor-move"
+      draggable="true"
+      (dragstart)="onDragStart($event, task)">
       <h3 class="font-bold text-gray-900 dark:text-white">{{ task.title }}</h3>
       <p class="text-sm text-gray-700 dark:text-gray-300">Responsável: <span class="font-semibold">{{ task.responsible }}</span></p>
       <p class="text-xs text-gray-500">Data limite: {{ task.dueDate | date:'shortDate' }}</p>

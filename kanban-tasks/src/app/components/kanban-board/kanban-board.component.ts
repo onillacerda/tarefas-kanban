@@ -17,6 +17,8 @@ export class KanbanBoardComponent implements OnInit {
   taskIdToDelete: string | null = null;
   showDeleteModal = false;
 
+  draggedTask!: Task;
+
   constructor(
     private taskService: TaskService,
     private notification: NotificationService
@@ -174,4 +176,32 @@ export class KanbanBoardComponent implements OnInit {
       dueDate: '',
     };
   }
+
+//  dragged - Arrastar e Soltar
+
+onDragStart(event: DragEvent, task: Task) {
+  this.draggedTask = task;
+  event.dataTransfer?.setData('text/plain', task._id!);
+}
+
+onDragOver(event: DragEvent) {
+  event.preventDefault();
+}
+
+onDrop(event: DragEvent, newStatus: Task['status']) {
+  event.preventDefault();
+
+  if (this.draggedTask && this.draggedTask.status !== newStatus) {
+    const updatedTask = { ...this.draggedTask, status: newStatus };
+    this.taskService.updateTask(updatedTask._id!, updatedTask).subscribe({
+      next: () => {
+        this.loadTasks();
+      },
+      error: (err) => {
+        console.error('Erro ao mover tarefa:', err);
+      },
+    });
+  }
+}
+
 }
