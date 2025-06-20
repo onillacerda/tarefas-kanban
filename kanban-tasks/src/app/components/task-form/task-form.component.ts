@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Task } from '../../models/task.model';
 import { TaskService } from '../../services/task.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-task-form',
@@ -15,8 +16,13 @@ export class TaskFormComponent implements OnInit {
   taskForm!: FormGroup;
 
   statusList = ['pendente', 'em andamento', 'concluída'];
+  isLoading = false;
 
-  constructor(private fb: FormBuilder, private taskService: TaskService) {}
+  constructor(
+    private fb: FormBuilder,
+    private taskService: TaskService,
+    private notification: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.taskForm = this.fb.group({
@@ -29,6 +35,7 @@ export class TaskFormComponent implements OnInit {
 
   onSubmit() {
     if (this.taskForm.invalid) {
+      this.notification.show('Por favor, preencha todos os campos.', 'error');
       return;
     }
 
@@ -37,21 +44,32 @@ export class TaskFormComponent implements OnInit {
       ...this.taskForm.value,
     };
 
-    if (this.taskToEdit?._id) {
-      this.taskService.updateTask(taskData._id!, taskData).subscribe(() => {
+    this.isLoading = true;
+
+    const request = this.taskToEdit?._id
+      ? this.taskService.updateTask(taskData._id!, taskData)
+      : this.taskService.createTask(taskData);
+
+    request.subscribe({
+      next: () => {
+        const msg = this.taskToEdit ? 'Tarefa atualizada com sucesso!' : 'Tarefa criada com sucesso!';
         this.formSubmit.emit();
         this.taskForm.reset();
-      });
-    } else {
-      this.taskService.createTask(taskData).subscribe(() => {
-        this.formSubmit.emit();
-        this.taskForm.reset();
-      });
-    }
+        this.notification.show(msg, 'success');
+      },
+      error: () => {
+        this.notification.show('Erro ao criar a tarefa.', 'error');
+      },
+      complete: () => {
+        this.isLoading = false;
+        this.notification.show('Operação concluída.', 'success');
+      }
+    });
   }
 
   onCancel() {
     this.taskForm.reset();
     this.formSubmit.emit();
+    this.notification.show('Operação cancelada.', 'info');
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Task } from '../../models/task.model';
 import { TaskService } from '../../services/task.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-kanban-board',
@@ -10,55 +11,63 @@ import { TaskService } from '../../services/task.service';
 export class KanbanBoardComponent implements OnInit {
   tasks: Task[] = [];
 
-  // Controle do modal
   showEditModal: boolean = false;
   editTaskData: Task = this.resetEditTask();
+  
+  taskIdToDelete: string | null = null;
+  showDeleteModal = false;
 
-  constructor(private taskService: TaskService) {}
+  constructor(
+    private taskService: TaskService,
+    private notification: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadTasks();
   }
 
+  // 🆕 Formulário para nova task
   newTask: Partial<Task> = {
     title: '',
     responsible: '',
     dueDate: '',
     status: 'pendente'
   };
-  
+
+  // ➕ Criar tarefa
   createTask() {
     if (!this.newTask.title || !this.newTask.responsible || !this.newTask.dueDate) {
-      alert('Preencha todos os campos obrigatórios!');
+      this.notification.show('Preencha todos os campos obrigatórios!', 'error');
       return;
     }
-  
-    // Preenchendo status default caso o usuário não selecione
+
     const taskToCreate: Task = {
       title: this.newTask.title,
       responsible: this.newTask.responsible,
       dueDate: this.newTask.dueDate!,
       status: 'pendente'
     };
-  
+
     this.taskService.createTask(taskToCreate).subscribe({
       next: () => {
         this.loadTasks();
         this.newTask = { title: '', responsible: '', dueDate: '', status: 'pendente' };
+        this.notification.show('Tarefa criada com sucesso!', 'success');
       },
-      error: (err) => console.error('Erro ao criar tarefa', err),
+      error: () => {
+        this.notification.show('Erro ao criar tarefa.', 'error');
+      },
     });
   }
-  
 
-  // 🔄 Carregar todas as tarefas
+  // 🔄 Carregar tarefas
   loadTasks() {
     this.taskService.getTasks().subscribe({
       next: (data) => {
         this.tasks = data;
       },
-      error: (err) => {
-        console.error('Erro ao carregar tarefas', err);
+      error: () => {
+        this.notification.show('Erro ao carregar tarefas.', 'error');
       },
     });
   }
@@ -73,24 +82,64 @@ export class KanbanBoardComponent implements OnInit {
     if (task.status === newStatus) return;
     const updatedTask = { ...task, status: newStatus };
     this.taskService.updateTask(task._id!, updatedTask).subscribe({
-      next: () => this.loadTasks(),
-      error: (err) => console.error('Erro ao mover tarefa', err),
+      next: () => {
+        this.loadTasks();
+        this.notification.show(`Movido para "${newStatus}"`, 'info');
+      },
+      error: () => {
+        this.notification.show('Erro ao mover tarefa.', 'error');
+      },
     });
   }
 
-  // 🗑️ Deletar tarefa
+  // Abrir o modal de confirmação
+  openDeleteModal(id: string) {
+    this.taskIdToDelete = id;
+    this.showDeleteModal = true;
+  }
+
+  // Cancelar
+  cancelDelete() {
+    this.taskIdToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  // Confirmar exclusão
+  confirmDelete() {
+    if (!this.taskIdToDelete) return;
+    this.taskService.deleteTask(this.taskIdToDelete).subscribe({
+      next: () => {
+        this.loadTasks();
+        this.notification.show('Tarefa excluída com sucesso!', 'success');
+        this.showDeleteModal = false;
+        this.taskIdToDelete = null;
+      },
+      error: () => {
+        this.notification.show('Erro ao excluir tarefa.', 'error');
+        this.showDeleteModal = false;
+        this.taskIdToDelete = null;
+      },
+    });
+  }
+
+  // 🗑️ Deletar tarefa (Código Antigo)
   deleteTask(id: string) {
     if (confirm('Deseja realmente excluir esta tarefa?')) {
       this.taskService.deleteTask(id).subscribe({
-        next: () => this.loadTasks(),
-        error: (err) => console.error('Erro ao excluir tarefa', err),
+        next: () => {
+          this.loadTasks();
+          this.notification.show('Tarefa excluída com sucesso!', 'success');
+        },
+        error: () => {
+          this.notification.show('Erro ao excluir tarefa.', 'error');
+        },
       });
     }
   }
 
   // ✏️ Abrir modal de edição
   openEditModal(task: Task) {
-    this.editTaskData = { ...task }; // Clone dos dados para o form
+    this.editTaskData = { ...task };
     this.showEditModal = true;
   }
 
@@ -103,12 +152,16 @@ export class KanbanBoardComponent implements OnInit {
   // 💾 Salvar edição
   saveEdit() {
     if (!this.editTaskData._id) return;
+
     this.taskService.updateTask(this.editTaskData._id, this.editTaskData).subscribe({
       next: () => {
         this.loadTasks();
         this.closeEditModal();
+        this.notification.show('Tarefa atualizada com sucesso!', 'success');
       },
-      error: (err) => console.error('Erro ao salvar edição', err),
+      error: () => {
+        this.notification.show('Erro ao atualizar tarefa.', 'error');
+      },
     });
   }
 
